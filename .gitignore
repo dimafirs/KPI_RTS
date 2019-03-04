@@ -46,7 +46,17 @@
 *.mod*
 *.cmd
 .tmp_versions/
+
+# Custom for Eclipse IDE
+.cproject
+.project
+
+# Build artifacts
+Lab1/main
 modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Data files
+Lab1/data_values
