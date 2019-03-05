@@ -12,4 +12,4 @@ all: clean $(TARGET)
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@ -lm
 clean:
-	rm -rf $(OBJ) $(TARGET)
+	rm -rf $(OBJ) $(TARGET) *_values

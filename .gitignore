@@ -59,4 +59,4 @@ Mkfile.old
 dkms.conf
 
 # Data files
-Lab1/data_values
+Lab1/*_values
