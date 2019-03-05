@@ -33,8 +33,7 @@ static double calc_variance(double *data, double me, int start, int end) {
 }
 
 /* Return difference in microseconds */
-static double timespec_diff(struct timespec *stop, struct timespec *start)
-{
+static double timespec_diff(struct timespec *stop, struct timespec *start) {
 	double diff = difftime(stop->tv_sec, start->tv_sec);
 	diff *= 1e6;
 	diff += (stop->tv_nsec - start->tv_nsec) / 1e3;
@@ -42,7 +41,7 @@ static double timespec_diff(struct timespec *stop, struct timespec *start)
 }
 
 /* Plot chart via GNU Plot */
-static void plot_chart(int x_limit, char *file_name){
+static void plot_chart(int x_limit, char *file_name) {
 	FILE *pipe = popen("gnuplot -persistent", "w");
 	fprintf(pipe, "set title \"Lab1\" \n");
 	fprintf(pipe, "plot [0:%d] '%s' with lines \n",
@@ -106,6 +105,10 @@ int main(int argc, char* argv[]) {
 		fprintf(variance_data, "%d %lf \n", i, variance[i]);
 		fprintf(time_data, "%d %lf \n", i, time_diffs[i]);
 	}
+	fclose(signal_data);
+	fclose(me_data);
+	fclose(variance_data);
+	fclose(time_data);
 
 	plot_chart(NUM_SECTIONS, "signal_values");
 	plot_chart(NUM_SECTIONS, "me_values");
