@@ -1,6 +1,6 @@
 #define NUM_HARMONICS 8
 #define MAX_FREQ 1100
-#define NUM_SECTIONS 256
+#define NUM_SECTIONS 30
 #define MAX_AMPLITUDE 5
 
 #include <stdlib.h>
@@ -40,6 +40,15 @@ static double timespec_diff(struct timespec *stop, struct timespec *start) {
 	return diff;
 }
 
+static const int values[] = {2, 2, -1, -1, 0, 0, -1, -1, 0, 0, -1, -1};
+static void generate_signal(double *result, int section_cnt)
+{
+	for(unsigned int i = 0; i < section_cnt; i++){
+		int index = i%12;
+		result[i] = values[index];
+	}
+}
+
 /* Plot chart via GNU Plot */
 static void plot_chart(int x_limit, char *file_name) {
 	FILE *pipe = popen("gnuplot -persistent", "w");
@@ -66,26 +75,7 @@ int main(int argc, char* argv[]) {
 	double time_diffs[NUM_SECTIONS];
 	memset(time_diffs, 0, NUM_SECTIONS * sizeof(*time_diffs));
 
-	const double harmonic_step = ((double) MAX_FREQ) / ((double) NUM_HARMONICS);
-	for(unsigned int i = 0; i < NUM_SECTIONS; i++){
-		struct timespec now, after;
-		clock_gettime(CLOCK_REALTIME, &now);
-		for(unsigned int j = 0; j < NUM_HARMONICS; j++){
-			/* X[i] = Ap * sin(Wp * t + fp)
-			 * Ap - amplitude (random)
-			 * Wp - one of harmonics
-			 * fp - phase (random)
-			 */
-			double Ap = MAX_AMPLITUDE * rand_double();
-			double Wp = (j + 1) * harmonic_step;
-			double fp = 2 * M_PI * rand_double();
-			X[i] += Ap * sin(Wp * i + fp);
-		}
-		math_expect[i] = calc_me(X, 0, i);
-		variance[i] = calc_variance(X, math_expect[i], 0, i);
-		clock_gettime(CLOCK_REALTIME, &after);
-		time_diffs[i] = timespec_diff(&after, &now);
-	}
+	generate_signal(X, NUM_SECTIONS);
 
 #ifdef DEBUG
 	printf("Calculated values: \n");
@@ -111,9 +101,6 @@ int main(int argc, char* argv[]) {
 	fclose(time_data);
 
 	plot_chart(NUM_SECTIONS, "signal_values");
-	plot_chart(NUM_SECTIONS, "me_values");
-	plot_chart(NUM_SECTIONS, "variance_values");
-	plot_chart(NUM_SECTIONS, "time_values");
 
 	printf("Successfully finish calculation\nStarting gnuplot...\n");
 exit:
