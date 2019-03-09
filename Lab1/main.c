@@ -19,7 +19,7 @@ static double calc_me(double *data, int start, int end) {
 	double result = 0;
 	for(int i = start; i < end; i++)
 		result += data[i];
-	result /= end;
+	result /= end - start;
 	return result;
 }
 
@@ -28,7 +28,7 @@ static double calc_variance(double *data, double me, int start, int end) {
 	double result = 0;
 	for(int i = start; i < end; i++)
 		result += (data[i] - me) * (data[i] - me);
-	result /= end - 1;
+	result /= end - start - 1;
 	return result;
 }
 
@@ -57,6 +57,7 @@ int main(int argc, char* argv[]) {
 	if (ferror(urandom))
 		goto exit;
 	srand(seed);
+	fclose(urandom);
 
 	double X[NUM_SECTIONS], math_expect[NUM_SECTIONS], variance[NUM_SECTIONS];
 	memset(X, 0, NUM_SECTIONS * sizeof(*X));

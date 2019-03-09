@@ -52,11 +52,11 @@
 .project
 
 # Build artifacts
-Lab1/main
+Lab*/main
 modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
 
 # Data files
-Lab1/*_values
+Lab*/*_values
