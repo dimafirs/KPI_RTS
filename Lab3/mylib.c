@@ -35,12 +35,14 @@ void plot_chart(int x_limit, const char *file_name, const char *title) {
 			x_limit, file_name);
 }
 
-void plot_bargraph(int x_limit, const char *filename) {
+void plot_bargraph(int x_limit, const char *filename, const char *title) {
 	FILE *pipe = popen("gnuplot -persistent", "w");
 	/* Some hardcode :( */
 	fprintf(pipe, "set boxwidth 0.1 \n");
 	fprintf(pipe, "set style fill solid \n");
-	fprintf(pipe, "plot [-1:4] \"%s\" w boxes, 0 with lines\n", filename);
+	fprintf(pipe, "set grid\n");
+	fprintf(pipe, "set title \"%s\"\n", title);
+	fprintf(pipe, "plot [-1:%d] \"%s\" w boxes, 0 with lines\n", x_limit, filename);
 }
 
 /* Generate static random process with parameters */
@@ -49,6 +51,7 @@ void generate_signal(double *result, int harm_cnt,
 {
 	const double harmonic_step = ((double) max_freq) / ((double) harm_cnt);
 	for(unsigned int i = 0; i < section_cnt; i++){
+		result[i] = 0;
 		for(unsigned int j = 0; j < harm_cnt; j++){
 			/* X[i] = Ap * sin(Wp * t + fp)
 			 * Ap - amplitude (random)
@@ -58,9 +61,15 @@ void generate_signal(double *result, int harm_cnt,
 			double Ap = max_ampl * rand_double();
 			double Wp = (j + 1) * harmonic_step;
 			double fp = 2 * M_PI * rand_double();
-			result[i] += Ap * sin(Wp * i + fp);
+			result[i] += Ap * sin(Wp * j + fp);
 		}
 	}
+}
+
+/* DFT debug function to see 2 harmonic on transition */
+void generate_sine(double *result, int cnt) {
+	for(int i = 0; i < cnt; i++)
+		result[i] = sin(i*M_PI/5) + 3*sin(i*M_PI/32);
 }
 
 int init_random() {
