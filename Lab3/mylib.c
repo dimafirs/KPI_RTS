@@ -72,6 +72,14 @@ void generate_sine(double *result, int cnt) {
 		result[i] = sin(i*M_PI/5) + 3*sin(i*M_PI/32);
 }
 
+/* Return difference in microseconds */
+double timespec_diff(struct timespec *stop, struct timespec *start) {
+	double diff = difftime(stop->tv_sec, start->tv_sec);
+	diff *= 1e6;
+	diff += (stop->tv_nsec - start->tv_nsec) / 1e3;
+	return diff;
+}
+
 int init_random() {
 	FILE *urandom = fopen("/dev/urandom", "rb");
 	if (NULL == urandom)
