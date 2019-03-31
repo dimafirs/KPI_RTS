@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O0 -Wall -g
+CFLAGS = -O4 -Wall -g
 TARGET = main
 OBJ = mylib.o main.o
 

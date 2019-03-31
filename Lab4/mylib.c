@@ -10,6 +10,7 @@
 static inline double rand_double() {
 	return ((double) rand()) / ((double) RAND_MAX);
 }
+
 /* Calculate matimatical expectation in double subarray */
 double calc_me(double *data, int start, int end) {
 	double result = 0;
@@ -28,22 +29,29 @@ double calc_variance(double *data, double me, int start, int end) {
 	return result;
 }
 
-/* Plot chart via GNU Plot */
-void plot_chart(int x_limit, const char *file_name, const char *title) {
-	FILE *pipe = popen("gnuplot -persistent", "w");
-	fprintf(pipe, "set title \"%s\" \n", title);
-	fprintf(pipe, "plot [0:%d] '%s' with lines, 0 with lines \n",
-			x_limit, file_name);
+/* Return difference in microseconds */
+double timespec_diff(struct timespec *stop, struct timespec *start) {
+	double diff = difftime(stop->tv_sec, start->tv_sec);
+	diff *= 1e6;
+	diff += (stop->tv_nsec - start->tv_nsec) / 1e3;
+	return diff;
 }
 
-void plot_bargraph(int x_limit, const char *filename, const char *title) {
-	FILE *pipe = popen("gnuplot -persistent", "w");
+/* Plot chart via GNU Plot */
+void plot_charts(int x_limit, const char *file_name, const char* sec_filename, const char *title) {
 	/* Some hardcode :( */
-	fprintf(pipe, "set boxwidth 0.1 \n");
-	fprintf(pipe, "set style fill solid \n");
-	fprintf(pipe, "set grid\n");
-	fprintf(pipe, "set title \"%s\"\n", title);
-	fprintf(pipe, "plot [-1:%d] \"%s\" w boxes, 0 with lines\n", x_limit, filename);
+	FILE *pipe = popen("gnuplot -persistent", "w");
+	fprintf(pipe, "set title \"%s\" \n", title);
+	fprintf(pipe, "plot [0:%d] '%s' with lines, '%s' with lines \n",
+			x_limit, file_name, sec_filename);
+}
+
+void plot_onechart(int x_limit, const char *filename, const char *title) {
+	/* Some hardcode :( */
+	FILE *pipe = popen("gnuplot -persistent", "w");
+	fprintf(pipe, "set title \"%s\" \n", title);
+	fprintf(pipe, "plot [0:%d] '%s' with lines\n",
+		x_limit, filename);
 }
 
 /* Generate static random process with parameters */
@@ -73,7 +81,20 @@ void generate_sine(double *result, int cnt) {
 		result[i] = sin(2*M_PI*i*50/1000) + 3*sin(2*M_PI*i*200/1000);
 }
 
-void fft(double complex *F, int N)
+void dft(double *X, double complex *F,
+		double complex **coeffs, int N)
+{
+	int K = N >> 1;
+	for(unsigned int k = 0; k < K; k++) {
+		F[k] = 0;
+		for(unsigned int n = 0; n < N; n++) {
+			F[k] += X[n] * coeffs[k][n];
+		}
+		F[k] /= N;
+	}
+}
+
+void fft(double complex *F, double complex *coeffs, int N)
 {
 	if (N < 2) {
 		return;
@@ -87,13 +108,13 @@ void fft(double complex *F, int N)
 		odd[i] = F[i*2+1];
 	}
 	// Split on tasks
-	fft(even, N/2);
-	fft(odd, N/2);
+	fft(even, coeffs, N/2);
+	fft(odd, coeffs, N/2);
 
 
 	// Calculate DFT
 	for (int k = 0; k < N / 2; k++) {
-		double complex t = cexp(-2 * M_PI * k / N * I) * odd[k];
+		double complex t = coeffs[k] * odd[k];
 		F[k] = even[k] + t;
 		F[N / 2 + k] = even[k] - t;
 	}
